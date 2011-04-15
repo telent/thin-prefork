@@ -33,7 +33,7 @@ tool if:
 
 ## Overview
 
-Thin::Prefork::Worker is a single process which does two things.  One:
+**Thin::Prefork::Worker** is a single process which does two things.  One:
 it answers incoming web requests one at a time - as you'd expect from
 a single process web server - and two: it listens on one end of an
 internal socket for commands from the master, and calls methods when
@@ -45,7 +45,7 @@ to exit.  To make it do anything more interesting you must subclass it
 with additional (or better) implementations of methods! whose! names!
 end! in! !
 
-Thin::Prefork is the master server.  It forks off children which run
+**Thin::Prefork** is the master server.  It forks off children which run
 (your subclass of) Thin::Prefork::Worker, restarts them when they die,
 and sends commands to them over the internal socket connection.
 
@@ -68,7 +68,8 @@ where this is going?  That's right, you can have your app reload
 automatically if the files in it change.
 
 To get this, 
-    require 'projectr'
-    require 'thin/prefork/projectr'
+
+     require 'projectr'
+     require 'thin/prefork/projectr'
 
 and then use Thin::Prefork::Projectr instead of Thin::Prefork
