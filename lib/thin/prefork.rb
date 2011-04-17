@@ -23,6 +23,11 @@ class Thin::Prefork
     @slow_start||=2
     @worker_class||=Worker
     @workers=[]
+    @io_handlers={}
+  end
+
+  def add_io_handler(io,&blk)
+    @io_handlers[io]=blk
   end
 
   def run!
@@ -38,11 +43,18 @@ class Thin::Prefork
     end
 
     until @workers.empty?
-      if block_given? then
-        yield
-      else
-        a=[]
-        IO.select(a,a,a,1)
+      a=@io_handlers.keys.dup
+      fin,fout,fe=IO.select(a,a,a,1)
+      @io_handlers.keys.each do |io|
+        if fin && fin.member?(io) && blk=@io_handlers[io] then
+          blk.call(:in)
+        end
+        if fout && fout.member?(io) && blk=@io_handlers[io] then
+          blk.call(:out)
+        end
+        if fe && fe.member?(io) && blk=@io_handlers[io] then
+          blk.call(:exception)
+        end
       end
       if died=Process.wait(-1,Process::WNOHANG)
         w=@workers.find { |w| w.pid==died }
@@ -80,7 +92,6 @@ class Thin::Prefork::Worker
 
   def initialize(args)
     set_attr_from_hash(args)
-    warn [:initailze,@app]
     @control_socket,control_client=
       Socket.pair(Socket::AF_UNIX, Socket::SOCK_STREAM, 0)
     @pid=Kernel.fork do
@@ -100,7 +111,6 @@ class Thin::Prefork::Worker
           end
         end
         self.start!
-        warn [:app,@app]
         Rack::Handler::Thin.run(@app,:Host=>@host, :Port=>@port)
       end
     end
