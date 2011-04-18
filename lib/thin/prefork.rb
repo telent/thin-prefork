@@ -2,8 +2,6 @@ require 'eventmachine'
 require 'thin'
 require 'socket'
 
-#Thin=Module.new
-
 class Thin::Prefork
   module NamedArgs
     def set_attr_from_hash(args)
@@ -12,7 +10,7 @@ class Thin::Prefork
       }
     end
   end
-
+  
   attr_accessor :num_workers,:app,:host,:port,:stderr,:slow_start,:pid_file
   attr_accessor :worker_class
   include NamedArgs
@@ -111,7 +109,7 @@ class Thin::Prefork::Worker
           end
         end
         self.start!
-        Rack::Handler::Thin.run(@app,:Host=>@host, :Port=>@port)
+        Rack::Handler::Thin.run(self.app,:Host=>@host, :Port=>@port)
       end
     end
   end
