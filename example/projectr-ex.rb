@@ -5,6 +5,7 @@ require 'projectr'
 require 'projectr/inotify'
 $:.push "lib"
 require 'thin/prefork'
+require 'thin/prefork/project'
 
 require 'sinatra/base'
 
@@ -18,35 +19,11 @@ Projectr::Project.new :hello do
   end
 end
 
-class Worker < Thin::Prefork::Worker
-  def start!
-    Projectr::Project[:hello].load!
-  end
-  def reload!
-    Projectr::Project[:hello]
-  end
-  def app
-    HelloWorld.new
-  end
-end
-
 h=Projectr::Project[:hello]
 h.load!
-master=Thin::Prefork::Projectr.new :worker_class=>Worker,:num_workers=>3,
+
+master=Thin::Prefork::Project.new :num_workers=>2,
+:project=>:hello,:app_class=>HelloWorld,
 :host=>"0.0.0.0",:port=>1974,:stderr=>$stderr
-
-# set up the file watch
-inotifier=h.watch_files do |project,name|
-  warn [:changed_file, name]
-  master.reload!
-end
-
-# register the filehandle for this notifier with the event loop 
-# in #run!  The block is called when inotifier.to_io is "ready"
-# for some class of I/O operation
-
-master.add_io_handler(inotifier.to_io) do |direction|
-  inotifier.process
-end
 
 master.run!
