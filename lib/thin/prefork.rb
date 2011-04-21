@@ -30,11 +30,11 @@ class Thin::Prefork
 
   def run!
     if @pid_file then
-        File.open(pid,"w") do |f|
+      File.open(@pid_file,"w") do |f|
         f.print "#{Process.pid}\n"
       end
     end
-
+    
     @num_workers.times do |i|
       @workers << @worker_class.new(:app=>@app,:host=>@host,:port=>i+@port,:stderr=>@stderr)
       sleep @slow_start
@@ -62,6 +62,7 @@ class Thin::Prefork
         end
       end
     end
+    @pid_file and File.delete @pid_file
   end
 
   def reload!
