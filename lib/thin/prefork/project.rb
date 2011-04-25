@@ -7,7 +7,7 @@ class Thin::Prefork::Project < Thin::Prefork
       Projectr::Project[self.project].load!
     end
     def app
-      self.app_class.new
+      @app || self.app_class.new
     end
   end
   def initialize(args)

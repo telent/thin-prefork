@@ -36,7 +36,7 @@ class Thin::Prefork
     end
     
     @num_workers.times do |i|
-      @workers << @worker_class.new(:app=>@app,:host=>@host,:port=>i+@port,:stderr=>@stderr)
+      @workers << @worker_class.new(:app=>self.app,:host=>@host,:port=>i+@port,:stderr=>@stderr)
       sleep @slow_start
     end
 
@@ -58,7 +58,7 @@ class Thin::Prefork
         w=@workers.find { |w| w.pid==died }
         if w && @respawn then
           @workers <<
-            Worker.new(:app=>@app,:host=>w.host,:port=>w.port,:stderr=>@stderr)
+            Worker.new(:app=>self.app,:host=>w.host,:port=>w.port,:stderr=>@stderr)
         end
       end
     end
