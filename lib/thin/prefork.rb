@@ -91,6 +91,9 @@ class Thin::Prefork::Worker
 
   def initialize(args)
     set_attr_from_hash(args)
+    unless @app then
+      raise Error,"Required parameter :app is null"
+    end
     @control_socket,control_client=
       Socket.pair(Socket::AF_UNIX, Socket::SOCK_STREAM, 0)
     @pid=Kernel.fork do
