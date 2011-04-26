@@ -6,12 +6,8 @@ class Thin::Prefork::Project < Thin::Prefork
     def reload!
       Projectr::Project[self.project].load!
     end
-    def app
-      self.app_class.new
-    end
   end
   def initialize(args)
-    app_class=args.delete(:app_class)
     project=args.delete(:project)
     super
 
@@ -24,7 +20,6 @@ class Thin::Prefork::Project < Thin::Prefork
     w.class_eval do
       include WorkerHelper
     end
-    w.send(:define_method,:app_class,Proc.new {|| app_class })
     w.send(:define_method,:project,Proc.new {|| project })
     self.worker_class=w
 

@@ -23,7 +23,7 @@ h=Projectr::Project[:hello]
 h.load!
 
 master=Thin::Prefork::Project.new :num_workers=>2,
-:project=>:hello,:app_class=>HelloWorld,
+:project=>:hello,:app=>HelloWorld.new,
 :host=>"0.0.0.0",:port=>1974,:stderr=>$stderr
 
 master.run!
