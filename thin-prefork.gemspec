@@ -5,7 +5,7 @@ require 'bundler/version'
  
 Gem::Specification.new do |s|
   s.name        = "thin-prefork"
-  s.version     = "0.01"
+  s.version     = "0.02"
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Daniel Barlow"]
   s.email       = ["dan@telent.net"]
