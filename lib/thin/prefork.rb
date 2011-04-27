@@ -131,12 +131,8 @@ class Thin::Prefork::Worker
 
   # This is called when the parent process receives a SIGHUP or other
   # indication that we should reinitialise our state.  You can use it
-  # to reload configuration files or application code, etc.  The
-  # default method exits, thus causing the parent to start another
-  # worker in our place
+  # to reload configuration files or application code, etc.
   def reload!
-    warn "reloading not supported"
-    stop!
   end
 
   def stop!
