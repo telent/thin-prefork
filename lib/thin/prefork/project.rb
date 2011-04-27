@@ -2,15 +2,16 @@ class Thin::Prefork::Project < Thin::Prefork
   module WorkerHelper
     def start!
       Projectr::Project[self.project].load!
+      super
     end
     def reload!
       Projectr::Project[self.project].load!
+      super
     end
   end
   def initialize(args)
     project=args.delete(:project)
     super
-
     # the purpose of this metagymnastics is to create a new subclass
     # of Thin::Prefork::Worker which has access to the values for
     # +app_class+ and +project+ that were passed as arguments to this
