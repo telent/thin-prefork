@@ -8,8 +8,40 @@ class App < Sinatra::Base
     content_type "text/plain"
     "hello"
   end
+  get '/var/*' do |var|
+    (eval "$#{var}").to_s
+  end
 end
 
+module TestRegister
+  def on_register
+    $register=$$
+  end
+end
+
+module TestKidHooks
+  def on_start
+    $start="child #{$$}"
+  end
+  def on_stop 
+    $stop="child #{$$}"
+  end
+end
+
+module TestFrobnitz
+  def child_frobnitz
+    $frobnitz="frobnitz"
+  end
+end
+
+module TestZebedee
+  def child_zebedee
+    $zebedee << "child"
+  end
+  def on_zebedee
+    $zebedee << "hook"
+  end
+end
 
 describe Thin::Prefork do
   def get(url)
@@ -66,11 +98,39 @@ describe Thin::Prefork do
     end
   end
 
-  it "runs on_register in the parent process"
-  it "runs on_start once in each child process and not in the parent"
-  it "runs on_stop once in each child process and not in the parent"
-  it "runs on_unregister in the parent process"
-  it "runs child_frobnitz in the child when a frobnitz command is mixed in"
-  it "runs both on_zebedee and child_zebedee in the child when a zebedee command is mixed in and on_zebedee exists"
+  it "runs on_register in the parent process" do
+    start :port=>3000,:worker_mixins=>[TestRegister]
+    get("http://127.0.0.1:3000/var/register").to_i.should == @kid
+  end
+  
+  it "runs on_start once in each child process and not in the parent" do
+    start :port=>3000,:worker_mixins=>[TestKidHooks]
+    get("http://127.0.0.1:3000/var/start").should match /child/
+  end
+
+  it "runs on_stop once in each child process and not in the parent" do
+    pending "not sure how the hell we test this"
+    start :port=>3000,:worker_mixins=>[TestKidHooks]
+    get("http://127.0.0.1:3000/var/stop").should_not match /child/
+  end
+
+  it "runs on_unregister in the parent process" do
+    pending "or this"
+  end
+
+  # these don't work because there's no frobnitz or zebedee methods 
+  # in the master object, nor any way for us to test it if there were
+  
+  it "runs child_frobnitz in the child when a frobnitz command is mixed in" do
+    start :port=>3000,:worker_mixins=>[TestFrobnitz]
+    get("http://127.0.0.1:3000/var/frobnitz").should match /frobnitz/
+  end
+
+  it "runs both on_zebedee and child_zebedee in the child when a zebedee command is mixed in and on_zebedee exists" do
+    start :port=>3000,:worker_mixins=>[TestZebedee]
+    v=get("http://127.0.0.1:3000/var/zebedee")
+    v.should match /child/
+    v.should match /hook/
+  end
 
 end
