@@ -23,18 +23,27 @@ module TestKidHooks
   def on_start
     $start="child #{$$}"
   end
+  
   def on_stop 
     $stop="child #{$$}"
   end
 end
 
+
 module TestFrobnitz
+  def frobnitz
+    self.send_control_message(:frobnitz)
+  end
   def child_frobnitz
     $frobnitz="frobnitz"
   end
 end
 
 module TestZebedee
+  $zebedee=''
+  def zebedee
+    self.send_control_message(:zebedee)
+  end
   def child_zebedee
     $zebedee << "child"
   end
@@ -56,9 +65,20 @@ describe Thin::Prefork do
       Signal.trap("TERM") do
         s.stop!
       end
+      if block_given? then
+        Signal.trap("USR1") do
+          warn [:sigusr1]
+          yield s
+        end
+      end
       s.run!
     end
     sleep 2
+    if block_given? then
+      Process.kill("USR1",@kid)
+      warn [:sending,:sigusr1]
+      sleep 1
+    end
   end
 
   before(:each) do 
@@ -122,15 +142,22 @@ describe Thin::Prefork do
   # in the master object, nor any way for us to test it if there were
   
   it "runs child_frobnitz in the child when a frobnitz command is mixed in" do
-    start :port=>3000,:worker_mixins=>[TestFrobnitz]
+    start :port=>3000,:worker_mixins=>[TestFrobnitz] do |s|
+      s.workers.each do |w|
+        w.frobnitz
+      end
+    end
     get("http://127.0.0.1:3000/var/frobnitz").should match /frobnitz/
   end
-
+  
   it "runs both on_zebedee and child_zebedee in the child when a zebedee command is mixed in and on_zebedee exists" do
-    start :port=>3000,:worker_mixins=>[TestZebedee]
+    start :port=>3000,:worker_mixins=>[TestZebedee] do |s|
+      s.workers.each do |w|
+        w.zebedee
+      end
+    end
     v=get("http://127.0.0.1:3000/var/zebedee")
     v.should match /child/
     v.should match /hook/
   end
-
 end

@@ -10,6 +10,7 @@ require_relative 'prefork/worker'
 class Thin::Prefork  
   attr_accessor :num_workers,:app,:host,:port,:stderr,:slow_start,:pid_file
   attr_accessor :worker_mixins
+  attr_reader :workers
   include NamedArgs
 
   def initialize(args)
