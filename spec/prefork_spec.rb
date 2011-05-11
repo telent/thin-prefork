@@ -29,7 +29,6 @@ module TestKidHooks
   end
 end
 
-
 module TestFrobnitz
   def frobnitz
     self.send_control_message(:frobnitz)
@@ -138,9 +137,6 @@ describe Thin::Prefork do
     pending "or this"
   end
 
-  # these don't work because there's no frobnitz or zebedee methods 
-  # in the master object, nor any way for us to test it if there were
-  
   it "runs child_frobnitz in the child when a frobnitz command is mixed in" do
     start :port=>3000,:worker_mixins=>[TestFrobnitz] do |s|
       s.workers.each do |w|
