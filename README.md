@@ -101,3 +101,9 @@ source file has changed.  You might want either or both or neither
 depending on your environment (e.g dev vs production) but the good news
 is it's your application, you can decide that yourself.
 
+
+## API docs
+
+API docs courtesy of rdoc.info: 
+http://rdoc.info/github/telent/thin-prefork/master/frames
+
