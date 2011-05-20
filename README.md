@@ -98,6 +98,6 @@ that looks something like this:
 
 This gets you reloading on SIGHUP or when Projectr detects that a
 source file has changed.  You might want either or both or neither
-dependin on your environment (e.g dev vs production) but the good news
+depending on your environment (e.g dev vs production) but the good news
 is it's your application, you can decide that yourself.
 
