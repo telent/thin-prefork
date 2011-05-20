@@ -51,16 +51,48 @@ module TestZebedee
   end
 end
 
+
+class TestIOServer < Thin::Prefork
+  $io=nil
+  class TimedRead
+    def initialize(timeout)
+      @io,client=Socket.pair(Socket::AF_UNIX, Socket::SOCK_STREAM, 0)
+      Kernel.fork do
+        @io.close
+        sleep timeout 
+        client.puts "wake up"
+        exit
+      end
+    end
+    def to_io
+      @io
+    end
+  end
+        
+  def initialize(args)
+    super
+    self.add_io_handler(TimedRead.new(4)) do |handler,direction|
+      if direction==:in then
+        warn [:got_io_thing,handler,direction]
+        File.open("/tmp/#{Process.pid}","w") do |f|
+          f.puts handler.to_io.read
+        end
+      end
+    end
+  end
+end
+
 describe Thin::Prefork do
   def get(url)
     Net::HTTP.get(URI.parse(url))
   end
 
   def start(args={})
+    clss=args.delete(:class) || Thin::Prefork
     args={:app=>App,
       :num_workers=>1,:stderr=>$stderr}.merge(args)
     @kid=Kernel.fork do
-      s=Thin::Prefork.new(args)
+      s=clss.new(args)
       Signal.trap("TERM") do
         s.stop!
       end
@@ -85,7 +117,10 @@ describe Thin::Prefork do
   end
 
   after(:each) do 
-    @kid and Process.kill("TERM",@kid)
+    if @kid then
+      Process.kill("TERM",@kid)
+      File.exists?("/tmp/#{@kid}") and File.unlink("/tmp/#{@kid}") 
+    end
   end
 
   it "answers requests on address w.x.y.z port n when started on that endpoint" do
@@ -155,5 +190,12 @@ describe Thin::Prefork do
     v=get("http://127.0.0.1:3000/var/zebedee")
     v.should match /child/
     v.should match /hook/
+  end
+
+  it "add_io_handler causes callbacks" do
+    start :class=>TestIOServer,:port=>3000
+    File.should_not exist("/tmp/#{@kid}")
+    sleep 5
+    File.should exist("/tmp/#{@kid}")
   end
 end

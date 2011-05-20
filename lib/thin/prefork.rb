@@ -32,6 +32,10 @@ class Thin::Prefork
     @io_handlers={}
   end
 
+  # add a handler to watch for file i/o in the parent process.  +io+ 
+  # is an object which responds to #to_io withan IO object: when it
+  # becomes available for read/write/exceptions, the supplied block will
+  # be called with +io+ as an argument
   def add_io_handler(io,&blk)
     @io_handlers[io]=blk
   end
@@ -50,22 +54,23 @@ class Thin::Prefork
     end
 
     until @workers.empty?
-      a=@io_handlers.keys.dup
+      a=@io_handlers.keys.map(&:to_io)
       fin,fout,fe=IO.select(a,a,a,1)
-      @io_handlers.keys.each do |io|
-        if fin && fin.member?(io) && blk=@io_handlers[io] then
-          blk.call(:in)
+      @io_handlers.keys.each do |o|
+        io=o.to_io
+        if fin && fin.member?(io) && blk=@io_handlers[o] then
+          blk.call(o,:in)
         end
-        if fout && fout.member?(io) && blk=@io_handlers[io] then
-          blk.call(:out)
+        if fout && fout.member?(io) && blk=@io_handlers[o] then
+          blk.call(o,:out)
         end
-        if fe && fe.member?(io) && blk=@io_handlers[io] then
-          blk.call(:exception)
+        if fe && fe.member?(io) && blk=@io_handlers[o] then
+          blk.call(o,:exception)
         end
       end
       if died=Process.wait(-1,Process::WNOHANG)
         if @respawn then
-          w=@workers.delete { |w| w.pid==died }
+          w=@workers.find { |w| w.pid==died }
           if w then w.start end
         end
       end
