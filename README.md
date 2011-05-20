@@ -75,7 +75,7 @@ automatically if the files in it change.
 
 ## Example usage
 
-If you're using the Projectr add-in, you'd typicaly create a bin/server.rb 
+If you're using the Projectr add-in, you'd typically create a bin/server.rb 
 that looks something like this:
 
     require 'projectr'
