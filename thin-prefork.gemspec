@@ -1,11 +1,7 @@
-#lib = File.expand_path('../lib/', __FILE__)
-#$:.unshift lib unless $:.include?(lib)
- 
-require 'bundler/version'
  
 Gem::Specification.new do |s|
   s.name        = "thin-prefork"
-  s.version     = "0.02"
+  s.version     = "0.03"
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Daniel Barlow"]
   s.email       = ["dan@telent.net"]

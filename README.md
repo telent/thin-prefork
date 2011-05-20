@@ -104,6 +104,8 @@ is it's your application, you can decide that yourself.
 
 ## API docs
 
-API docs courtesy of rdoc.info: 
+API docs (which it must be admitted are pretty uninformative) courtesy
+of rdoc.info:
 http://rdoc.info/github/telent/thin-prefork/master/frames
 
+You may be better off using the source for the moment.
