@@ -83,5 +83,10 @@ class Thin::Prefork
     @workers.each { |w| w.stop; w.unregister }
     @workers=[]
   end
+
+  def reload!
+    self.workers.map(&:stop)
+    self.workers.map(&:start)
+  end
 end
 

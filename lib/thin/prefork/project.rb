@@ -1,21 +1,8 @@
 class Thin::Prefork::Project < Thin::Prefork
+  attr_accessor :project
 
-  # We define #project= and #project methods. Because the parent uses
-  # T::P::NamedArgs, this allows :project to be used as an initarg
-  def project=(project)
-    @project=Projectr::Project[project]
-    inotifier=@project.watch_files do |p|
-      self.reload
-    end
-  end
-  def project
-    @project
-  end
-
-  def reload
-    self.workers.map(&:stop)
+  def reload!
     self.project.load!
-    self.workers.map(&:start)
+    super
   end
-
 end
