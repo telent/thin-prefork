@@ -1,7 +1,7 @@
  
 Gem::Specification.new do |s|
   s.name        = "thin-prefork"
-  s.version     = "0.03"
+  s.version     = "0.031"
   s.platform    = Gem::Platform::RUBY
   s.authors     = ["Daniel Barlow"]
   s.email       = ["dan@telent.net"]
