@@ -63,7 +63,7 @@ class Thin::Prefork::Worker
   attr_accessor :app,:control_socket,:pid,:host,:port,:stderr
 
   include Thin::Prefork::Worker::Lifecycle
-
+  
   def initialize(args)
     set_attr_from_hash(args)
     self.on_register
@@ -100,7 +100,13 @@ class Thin::Prefork::Worker
   end
 
   def stop
-    send_control_message(:stop)
+    begin
+      send_control_message(:stop)
+    rescue Errno::EPIPE => e
+      # the remote end sometimes shuts down particularly quickly,
+      # causing us to get a failure from this message send which we
+      # may safely ignore
+    end
   end
   def child_stop
     exit 0
